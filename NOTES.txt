@@ -1,4 +1,2 @@
 1 . npm start ->eact have two technologyone is wabel other is webpack. wabel convert all react code it JavaScript and
  then webpack run that code in local host.
-2 . npm run build ->it is command for webpack. it convert all react code in JavaScript and then webpack run that 
-code in local
