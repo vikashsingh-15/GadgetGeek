@@ -2,8 +2,8 @@
 import { Box, Button, Typography,styled} from "@mui/material";
 // import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';// default export
 import{ShoppingCart} from '@mui/icons-material'//named import technique
-
-
+import LoginDialog from "../login/LoginDialog";
+import { useState } from "react";
 
 
 
@@ -34,15 +34,22 @@ const LoginButton=styled(Button)`
 `
 
 const CustomButtons = () => {
+
+  const [open, setOpen] = useState(false);
+  const openDialog=()=>{
+    setOpen(true);
+  }
+
   return (
     <Wrapper>
-        <LoginButton variant="contained">Login</LoginButton>
+        <LoginButton variant="contained" onClick={()=>openDialog()}>Login</LoginButton>
         <Typography style={{marginTop:3,width:135,color:"white"}}>Becomen a seller</Typography>  
         <Typography style={{marginTop:3,width:100,color:"white"}}>More</Typography>  
         <Container style={{marginTop:3,width:135,color:"white"}}>
             <ShoppingCart/>
             <Typography style={{color:"white"}}>Cart</Typography>
-        </Container>      
+        </Container>  
+        <LoginDialog open={open}setOpen={setOpen}/>    
     </Wrapper>
   )
 }
@@ -55,4 +62,11 @@ export default CustomButtons;
 /**
  * 
  * 1. look difference between named Import vs Default Export in react
+ * 2. Use state is react hook where we can store value
+ * 3. <LoginButton variant="contained" onClick={()=>openDialog()}>Login</LoginButton> in this line sinceit is react 
+ *    'c' in onClick is capital had it been JS then "c" would have been small i.e. onclick()  becaues in React function are 
+ *      wrapper thus we use capital 'C'.
+ * 
+ * 
+ * 
  */
