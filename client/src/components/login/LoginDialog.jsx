@@ -7,10 +7,9 @@ import {
   styled,
 } from "@mui/material";
 
-import { useState, useContext} from "react";
-import {authenticateSignup} from '../../service/api';
-import { DataContext } from '../../context/DataProvider';
-
+import { useState, useContext } from "react";
+import { authenticateSignup, authenticateLogin } from "../../service/api";
+import { DataContext } from "../../context/DataProvider";
 
 const Component = styled(Box)`
   padding: 0;
@@ -73,6 +72,15 @@ const SignupText = styled(Typography)`
   font-weight: bold;
   cursor: pointer;
 `;
+
+const ErrorText = styled(Typography)`
+font-size: 10px;
+  color: red;
+  line-height: 0px;
+  margin-top: 10px;
+  font-weight: bold;
+`
+
 const accountInitialValue = {
   login: {
     view: "login",
@@ -91,18 +99,25 @@ const signupInitialValue = {
   firstName: ``,
   lastName: ``,
   email: ``,
-  password: ``
-}
+  password: ``,
+};
+
+const loginInitialValue = {
+  email: "",
+  password: "",
+};
 
 const LoginDialog = ({ open, setOpen }) => {
   const [account, toggleAccount] = useState(accountInitialValue.login);
-  const [signup,setSignup]=useState(signupInitialValue);//this stae is used to store value of what user is trping in signupForm
-
-  const {setAccount} = useContext(DataContext);
+  const [signup, setSignup] = useState(signupInitialValue); //this stae is used to store value of what user is trping in signupForm
+  const [login, setLogin] = useState(loginInitialValue);
+  const { setAccount } = useContext(DataContext);
+  const [error, setError] = useState(false);
 
   const handleClose = () => {
     setOpen(false);
     toggleAccount(accountInitialValue.login);
+    setError(false);
   };
 
   const toggleSignup = () => {
@@ -112,22 +127,36 @@ const LoginDialog = ({ open, setOpen }) => {
     toggleAccount(accountInitialValue.login);
   };
 
+  const onInputChange = (e) => {
+    setSignup({ ...signup, [e.target.name]: e.target.value });
+    //signnup ko set kar rahe hai by destructuring, destructuring is imp so that it dont get override
+    //e.target.name is used to get the name of the input field and e.target.value is used to get the value of the input field
+    //e.target.name is a variable thus is placed in [] bracket.
+  };
 
-const onInputChange = (e) => {
-  setSignup({...signup,[e.target.name]:e.target.value})
-//signnup ko set kar rahe hai by destructuring, destructuring is imp so that it dont get override
-//e.target.name is used to get the name of the input field and e.target.value is used to get the value of the input field
-//e.target.name is a variable thus is placed in [] bracket.
-};
+  const signupUser = async () => {
+    //on button click i need to call an Api,for calling api i will use Axios thus intall it.
+    let response = await authenticateSignup(signup);
+    if (!response) return;
+    handleClose();
+    setAccount(signup.firstName);
+  };
 
+  const onValueChange = (e) => {
+    setLogin({ ...login, [e.target.name]: e.target.value });
+  };
 
-const signupUser= async () => {
-//on button click i need to call an Api,for calling api i will use Axios thus intall it.
-let response=await authenticateSignup(signup);
-  if(!response) return;
-  handleClose();
-  setAccount(signup.firstName);
-};
+  const loginUser = async () => {
+    let response = await authenticateLogin(login);
+    console.log(response);
+
+    if (response.status === 200) {
+      handleClose();
+      setAccount(response.data.data.firstName);
+    } else {
+      setError(true);
+    }
+  };
 
   return (
     <Dialog
@@ -143,22 +172,55 @@ let response=await authenticateSignup(signup);
           </ImageBox>
           {account.view === "login" ? ( // using ternory to see if we need to show login or signup.If condition is gtrue then login else signup wrapper will open
             <Wrapper>
-              <TextField variant="standard" label="Enter Email" />
-              <TextField variant="standard" label="Enter Password" />
+              <TextField
+                variant="standard"
+                onChange={(e) => onValueChange(e)}
+                name="email"
+                label="Enter Email"
+              />
+              {error && 
+                <ErrorText>Please Enter valid credentials.</ErrorText>
+              }
+              <TextField
+                variant="standard"
+                onChange={(e) => onValueChange(e)}
+                name="password"
+                label="Enter Password"
+              />
               <Text> By Containing you agree to Enjoy.</Text>
-              <LogInButton> Login</LogInButton>
+              <LogInButton onClick={() => loginUser()}> Login</LogInButton>
               <SignupText onClick={() => toggleSignup()}>
                 New User. SignUp!
               </SignupText>
             </Wrapper>
           ) : (
             <Wrapper>
-              <TextField variant="standard" onChange={(e)=>onInputChange(e)} name="firstName" label="Enter First Name" />
-              <TextField variant="standard" onChange={(e)=>onInputChange(e)} name="lastName" label="Enter Last Name" />
-              <TextField variant="standard" onChange={(e)=>onInputChange(e)} name="email"label="Enter Email" />
-              <TextField variant="standard" onChange={(e)=>onInputChange(e)} name="password" label="Enter Password" />
+              <TextField
+                variant="standard"
+                onChange={(e) => onInputChange(e)}
+                name="firstName"
+                label="Enter First Name"
+              />
+              <TextField
+                variant="standard"
+                onChange={(e) => onInputChange(e)}
+                name="lastName"
+                label="Enter Last Name"
+              />
+              <TextField
+                variant="standard"
+                onChange={(e) => onInputChange(e)}
+                name="email"
+                label="Enter Email"
+              />
+              <TextField
+                variant="standard"
+                onChange={(e) => onInputChange(e)}
+                name="password"
+                label="Enter Password"
+              />
               <Text> By Containing you agree to Enjoy.</Text>
-              <LogInButton onClick={()=>signupUser()}> Signup</LogInButton>
+              <LogInButton onClick={() => signupUser()}> Signup</LogInButton>
               <SignupText onClick={() => toggleLogIn()}>
                 Existing User. Login!
               </SignupText>
@@ -171,10 +233,6 @@ let response=await authenticateSignup(signup);
 };
 
 export default LoginDialog;
-
-
-
-
 
 //Note
 
