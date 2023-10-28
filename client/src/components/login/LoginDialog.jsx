@@ -7,7 +7,10 @@ import {
   styled,
 } from "@mui/material";
 
-import { useState } from "react";
+import { useState, useContext} from "react";
+import {authenticateSignup} from '../../service/api';
+import { DataContext } from '../../context/DataProvider';
+
 
 const Component = styled(Box)`
   padding: 0;
@@ -83,8 +86,19 @@ const accountInitialValue = {
   },
 };
 
+const signupInitialValue = {
+  //this will conatin the intial value of signUp data by user
+  firstName: ``,
+  lastName: ``,
+  email: ``,
+  password: ``
+}
+
 const LoginDialog = ({ open, setOpen }) => {
   const [account, toggleAccount] = useState(accountInitialValue.login);
+  const [signup,setSignup]=useState(signupInitialValue);//this stae is used to store value of what user is trping in signupForm
+
+  const {setAccount} = useContext(DataContext);
 
   const handleClose = () => {
     setOpen(false);
@@ -97,6 +111,24 @@ const LoginDialog = ({ open, setOpen }) => {
   const toggleLogIn = () => {
     toggleAccount(accountInitialValue.login);
   };
+
+
+const onInputChange = (e) => {
+  setSignup({...signup,[e.target.name]:e.target.value})
+//signnup ko set kar rahe hai by destructuring, destructuring is imp so that it dont get override
+//e.target.name is used to get the name of the input field and e.target.value is used to get the value of the input field
+//e.target.name is a variable thus is placed in [] bracket.
+};
+
+
+const signupUser= async () => {
+//on button click i need to call an Api,for calling api i will use Axios thus intall it.
+let response=await authenticateSignup(signup);
+  if(!response) return;
+  handleClose();
+  setAccount(signup.firstName);
+};
+
   return (
     <Dialog
       open={open}
@@ -121,12 +153,12 @@ const LoginDialog = ({ open, setOpen }) => {
             </Wrapper>
           ) : (
             <Wrapper>
-              <TextField variant="standard" label="Enter First Name" />
-              <TextField variant="standard" label="Enter Last Name" />
-              <TextField variant="standard" label="Enter Email" />
-              <TextField variant="standard" label="Enter Password" />
+              <TextField variant="standard" onChange={(e)=>onInputChange(e)} name="firstName" label="Enter First Name" />
+              <TextField variant="standard" onChange={(e)=>onInputChange(e)} name="lastName" label="Enter Last Name" />
+              <TextField variant="standard" onChange={(e)=>onInputChange(e)} name="email"label="Enter Email" />
+              <TextField variant="standard" onChange={(e)=>onInputChange(e)} name="password" label="Enter Password" />
               <Text> By Containing you agree to Enjoy.</Text>
-              <LogInButton> Signup</LogInButton>
+              <LogInButton onClick={()=>signupUser()}> Signup</LogInButton>
               <SignupText onClick={() => toggleLogIn()}>
                 Existing User. Login!
               </SignupText>
@@ -139,3 +171,17 @@ const LoginDialog = ({ open, setOpen }) => {
 };
 
 export default LoginDialog;
+
+
+
+
+
+//Note
+
+/*
+1. onChange={(e)=>onInputChange(e)} , we need it to take out value of what user is typing in box.
+     jo value nikalta hai wo event ke ander se niaklta hai thus we need to pass "e".
+2.    <TextField variant="standard" onChange={(e)=>onInputChange(e)} name="firstName" label="Enter First Name" /> -> name field act as key while destructuring and then it is used to swtSignUp nad store the value written by user.
+3.after successful signup we need to display name of user ,ie we need to move state from login dialog to custom button .To do so we need Contex.
+    hence we are using data Provider as cotext 
+*/
